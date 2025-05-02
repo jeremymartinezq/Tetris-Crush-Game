@@ -1,8 +1,10 @@
 # Tetris Crush
 
 A fast-paced, colorful browser game that fuses the mechanics of Tetris (falling blocks, line-clearing) with Candy Crush (color-matching, combo explosions). 
+<img width="949" alt="Screenshot 2025-05-02 011842" src="https://github.com/user-attachments/assets/f30f81cc-0e6e-4624-a6a0-a00a487c983b" />
+<img width="951" alt="Screenshot 2025-05-02 012404" src="https://github.com/user-attachments/assets/1a6e914e-20e8-4615-9cb4-d4696a7c2231" />
 
-![Tetris Crush Screenshot](screenshot.png)
+
 
 ## Features
 
