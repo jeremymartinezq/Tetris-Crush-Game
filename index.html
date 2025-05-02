@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Crush</title>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Exo+2:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00AAFF',
+                        secondary: '#FF3366',
+                        accent: '#7B42FC',
+                        neon: {
+                            blue: '#00AAFF',
+                            pink: '#FF3366',
+                            purple: '#7B42FC',
+                            green: '#00FF99',
+                            yellow: '#FFDD00',
+                            cyan: '#00FFFF',
+                        }
+                    },
+                    fontFamily: {
+                        title: ['"Russo One"', 'sans-serif'],
+                        body: ['"Exo 2"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { textShadow: '0 0 5px #00AAFF, 0 0 10px #00AAFF, 0 0 15px #00AAFF' },
+                            '100%': { textShadow: '0 0 10px #FF3366, 0 0 20px #FF3366, 0 0 30px #FF3366' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0d0221 0%, #1a0033 100%);
+            overflow: hidden;
+            touch-action: manipulation;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        .neon-border {
+            box-shadow: 0 0 10px #00AAFF, 0 0 20px #7B42FC;
+            border: 2px solid #00AAFF;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px #00AAFF, 0 0 20px #7B42FC;
+        }
+        .grid-bg {
+            background-image: radial-gradient(rgba(123, 66, 252, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .game-button {
+            transition: all 0.1s ease;
+            box-shadow: 0 0 5px rgba(0, 170, 255, 0.7);
+        }
+        .game-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 170, 255, 1);
+        }
+        .game-button:active {
+            transform: scale(0.95);
+        }
+        #game-canvas {
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.7), 0 0 40px rgba(123, 66, 252, 0.5);
+        }
+        .score-value {
+            text-shadow: 0 0 10px rgba(0, 170, 255, 0.7);
+        }
+        .full-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right, 
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+    </style>
+</head>
+<body class="grid-bg font-body">
+    <div class="full-container">
+        <h1 class="text-5xl md:text-6xl font-title text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4 animate-glow">TETRIS CRUSH</h1>
+        
+        <div class="flex flex-col md:flex-row gap-8 w-full max-w-7xl items-center justify-center">
+            <!-- Game Board -->
+            <div class="relative">
+                <canvas id="game-canvas" width="300" height="600" class="rounded-lg neon-border"></canvas>
+                
+                <!-- Game Over Screen -->
+                <div id="game-over" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg hidden">
+                    <h2 class="text-4xl font-title text-secondary mb-4 neon-text">GAME OVER</h2>
+                    <p class="text-xl text-white mb-6">Final Score: <span id="final-score" class="text-primary font-bold">0</span></p>
+                    <button id="restart-button" class="game-button shine bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-8 rounded-full text-xl shadow-lg">
+                        PLAY AGAIN
+                    </button>
+                </div>
+                
+                <!-- Start Screen -->
+                <div id="start-screen" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center rounded-lg">
+                    <h2 class="text-4xl font-title text-primary mb-6 neon-text">READY?</h2>
+                    <button id="start-button" class="game-button shine bg-gradient-to-r from-primary to-secondary text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg animate-pulse-fast">
+                        START GAME
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Game Info -->
+            <div class="flex flex-col items-center md:items-start gap-6 w-full md:w-auto">
+                <!-- Score Board -->
+                <div class="bg-black bg-opacity-50 rounded-lg p-6 w-full md:w-72 neon-border">
+                    <div class="mb-4">
+                        <h3 class="text-primary text-lg">SCORE</h3>
+                        <p class="score-value text-4xl font-bold text-white" id="current-score">0</p>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="text-primary text-lg">BEST</h3>
+                        <p class="score-value text-3xl font-bold text-white" id="best-score">0</p>
+                    </div>
+                    <div>
+                        <h3 class="text-primary text-lg">LEVEL</h3>
+                        <p class="score-value text-3xl font-bold text-white" id="level">1</p>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="bg-black bg-opacity-50 rounded-lg p-6 w-full md:w-72 neon-border">
+                    <h3 class="text-primary text-lg mb-3">CONTROLS</h3>
+                    <ul class="text-white space-y-2">
+                        <li>← → : Move</li>
+                        <li>↑ : Rotate</li>
+                        <li>↓ : Soft Drop</li>
+                        <li>Space : Hard Drop</li>
+                        <li>P : Pause</li>
+                    </ul>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="flex gap-4">
+                    <button id="pause-button" class="game-button shine bg-primary text-white font-bold py-2 px-6 rounded-full shadow-lg">
+                        PAUSE
+                    </button>
+                    <button id="mute-button" class="game-button shine bg-accent text-white font-bold py-2 px-6 rounded-full shadow-lg">
+                        🔊
+                    </button>
+                </div>
+
+                <!-- Touch Controls (for mobile) -->
+                <div class="flex md:hidden justify-center gap-4 mt-4 w-full">
+                    <button id="touch-left" class="game-button bg-primary bg-opacity-60 text-white font-bold py-4 px-6 rounded-lg text-2xl">
+                        ←
+                    </button>
+                    <button id="touch-rotate" class="game-button bg-primary bg-opacity-60 text-white font-bold py-4 px-6 rounded-lg text-2xl">
+                        ↑
+                    </button>
+                    <button id="touch-right" class="game-button bg-primary bg-opacity-60 text-white font-bold py-4 px-6 rounded-lg text-2xl">
+                        →
+                    </button>
+                    <button id="touch-drop" class="game-button bg-primary bg-opacity-60 text-white font-bold py-4 px-6 rounded-lg text-2xl">
+                        ↓
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/blocks.js"></script>
+    <script src="js/board.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 
