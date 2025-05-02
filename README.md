@@ -42,7 +42,7 @@ No installation required! Simply open `index.html` in any modern browser to play
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/tetris-crush.git
+git clone https://github.com/jeremymartinezq/Tetris-Crush-Game.git
 
 # Open the index.html file in your browser
 ```
@@ -66,4 +66,4 @@ The game is structured into modular JavaScript files:
 
 ## Author
 
-Developed by Jeremy Martinez-Quinones. 
+Developed by Jeremy Martinez-Quinones.
